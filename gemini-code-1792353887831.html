@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Нишевые места Петербурга</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f1115;
+            --card-bg: #181b22;
+            --text-color: #e2e8f0;
+            --text-muted: #94a3b8;
+            --accent-color: #f43f5e;
+            --accent-glow: rgba(244, 63, 94, 0.25);
+            --border-color: #2a2f3d;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #fff 0%, #f43f5e 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        /* Map Section */
+        .map-section {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1rem;
+            margin-bottom: 3rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+        }
+
+        .map-container {
+            width: 100%;
+            max-width: 1073px;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        /* Grid Section */
+        .locations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-color);
+            box-shadow: 0 12px 30px var(--accent-glow);
+        }
+
+        .card-img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+        }
+
+        .card-content {
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .card-tag {
+            display: inline-block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--accent-color);
+            background: rgba(244, 63, 94, 0.1);
+            padding: 0.25rem 0.6rem;
+            border-radius: 6px;
+            margin-bottom: 0.75rem;
+            align-self: flex-start;
+        }
+
+        .card h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+            color: #fff;
+        }
+
+        .card .address {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+        }
+
+        .card .short-desc {
+            font-size: 0.9rem;
+            color: #cbd5e1;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .card-footer-btn {
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--accent-color);
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        /* Modal Popup */
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 1rem;
+        }
+
+        .modal-backdrop.active {
+            display: flex;
+        }
+
+        .modal-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            max-width: 650px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+            animation: modalIn 0.3s ease;
+        }
+
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(0, 0, 0, 0.6);
+            border: none;
+            color: #fff;
+            font-size: 1.5rem;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            transition: background 0.2s ease;
+        }
+
+        .modal-close:hover {
+            background: var(--accent-color);
+        }
+
+        .modal-img {
+            width: 100%;
+            height: 280px;
+            object-fit: cover;
+        }
+
+        .modal-body {
+            padding: 1.8rem;
+        }
+
+        .modal-body h2 {
+            font-size: 1.8rem;
+            color: #fff;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-body .modal-address {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .modal-body .modal-desc {
+            color: #cbd5e1;
+            font-size: 1rem;
+            line-height: 1.7;
+            margin-bottom: 1rem;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 4rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2.2rem; }
+            .locations-grid { grid-template-columns: 1fr; }
+            .modal-img { height: 200px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Нишевые места Петербурга</h1>
+            <p class="subtitle">Интерактивная карта и каталог атмосферных локаций</p>
+        </header>
+
+        <!-- Интерактивная карта Yandex -->
+        <section class="map-section">
+            <div class="map-container">
+                <script type="text/javascript" charset="utf-8" async src="https://api-maps.yandex.ru/services/constructor/1.0/js/?um=constructor%3A729e5aec466888490e77626ec57e3ac7f9412fddd0d5b172049c543a315e6f6c&amp;width=1073&amp;height=718&amp;lang=ru_RU&amp;scroll=true"></script>
+            </div>
+        </section>
+
+        <!-- Сетка локаций -->
+        <div class="locations-grid" id="locationsGrid"></div>
+
+        <footer>
+            <p>Нишевые места Петербурга • 2026</p>
+        </footer>
+    </div>
+
+    <!-- Модальное окно -->
+    <div class="modal-backdrop" id="modalBackdrop">
+        <div class="modal-card">
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <img src="" alt="" class="modal-img" id="modalImg">
+            <div class="modal-body">
+                <span class="card-tag" id="modalTag"></span>
+                <h2 id="modalTitle"></h2>
+                <div class="modal-address" id="modalAddress"></div>
+                <p class="modal-desc" id="modalDesc"></p>
+                <div id="modalLinkContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const locations = [
+            {
+                tag: "Бар",
+                title: "Бар «Хроники»",
+                address: "📍 ул. Некрасова, 26, Центральный район",
+                img: "https://img.restoclub.ru/uploads/place/5/7/4/4/5744c6e70f06bda21fbd1c66088a619c_w1230_h820--no-cut.webp?v=3",
+                shortDesc: "Культовый бар с интеллигентной атмосферой, северными настойками и классическим интерьером.",
+                fullDesc: "Бар «Хроники» — легендарное место петербургской барной культуры на улице Некрасова. Здесь сочетаются сдержанный лаконичный интерьер, широкий выбор фирменных настоек, редкое пиво и классический коктейльный напиток 'Свободная Ингрия'. Заведение славится интеллигентной публикой, долгими философскими разговорами и атмосферной музыкой.",
+                link: "https://www.restoclub.ru/spb/place/hroniki",
+                linkText: "Посмотреть на Restoclub"
+            },
+            {
+                tag: "Парк",
+                title: "Елагин остров",
+                address: "📍 Санкт-Петербург, Елагин остров (ЦПКиО)",
+                img: "https://7d9e88a8-f178-4098-bea5-48d960920605.selcdn.net/cb3022d2-83e7-44dd-ae4b-83e461dae7e7/-/format/webp/-/resize/1300x/",
+                shortDesc: "Дворцово-парковый ансамбль, живописные пруды, ручные белки и тишина в черте города.",
+                fullDesc: "Елагин остров — уникальный природно-охраняемый комплекс в дельте Невы. Это идеальное место для прогулок в любое время года: здесь расположены Елагиноостровский дворец[cite: 12], цветущие аллеи с тюльпанами[cite: 13], уютные пристани и тенистые аллеи. Остров знаменит своими дружелюбными белками и великолепными видами."
+            },
+            {
+                tag: "Книжный магазин",
+                title: "«Порядок слов»",
+                address: "📍 наб. реки Фонтанки, 15",
+                img: "https://mr-7.ru/static/records/1cfc474b24f644d1805ac6d0e634e40f.jpeg",
+                shortDesc: "Независимый книжный с уникальной подборкой гуманитарной литературы и культурными лекциями.",
+                fullDesc: "«Порядок слов» на Фонтанке — один из первых и главных независимых книжных магазинов Петербурга. Здесь собираются киноведы, философы и любители хорошей литературы. В магазине постоянно проходят бесплатные лекции, кинопоказы, презентации книг и встречи с авторами."
+            },
+            {
+                tag: "Книжный магазин",
+                title: "«Фактотум»",
+                address: "📍 ул. Кропоткина",
+                img: "https://avatars.mds.yandex.net/get-altay/4344240/2a000001773d5e2e55602d29f9bcf7721a0e/L_height",
+                shortDesc: "Уютный камерный книжный магазин на Петроградке с редкой худелит и нон-фикшном.",
+                fullDesc: "Магазин «Фактотум» предлагает внимательно отобранную коллекцию художественной литературы, книг по искусству, философии и поэзии. Камерная атмосфера Петроградской стороны делает его отличной точкой для неспешного выбора литературы."
+            },
+            {
+                tag: "Книжный магазин",
+                title: "«Все свободны»",
+                address: "📍 ул. Некрасова / Моховая",
+                img: "https://avatars.mds.yandex.net/get-altay/406255/2a00000185c5f84868a128ac632cecb171c9/orig",
+                shortDesc: "Независимый книжный с интеллектуальной литературой, редкой периодикой и зинами.",
+                fullDesc: "Книжный магазин «Все свободны» специализируется на гуманитарной литературе, социологии, культурологии, философии и независимых изданиях. Здесь вы найдете редкие книги малых издательств, которые сложно найти в сетевых магазинах."
+            },
+            {
+                tag: "Книжный магазин",
+                title: "«Жёлтый двор»",
+                address: "📍 ул. Марата",
+                img: "https://avatars.mds.yandex.net/get-altay/11374564/2a0000019151e9501d5ac5e395e007fe567d/L_height",
+                shortDesc: "Специализированное книжное пространство, посвященное культуре и литературе Востока.",
+                fullDesc: "«Жёлтый двор» — единственный в своем роде книжный магазин Петербурга, полностью сосредоточенный на литературе Китая, Японии, Кореи и стран Ближнего Востока. Здесь можно найти редкие переводы, монографии по восточной философии и искусству."
+            },
+            {
+                tag: "Книжный магазин",
+                title: "«Подписные издания»",
+                address: "📍 Литейный пр., 57",
+                img: "https://www.podpisnie.ru/local/templates/podpisnieNew/assets/img/slider/sl-1.jpg",
+                shortDesc: "Культовый двухэтажный книжный флагман с ароматом кофе, сувенирами и уютным балконом.",
+                fullDesc: "История «Подписных изданий» ведется с 1926 года. Сегодня это огромное стильное пространство на Литейном проспекте с балконом-кофейней, детским отделом, канцелярией собственного производства и грандиозным выбором книг на разных языках."
+            },
+            {
+                tag: "Кинотеатр",
+                title: "Cinéma Michèle",
+                address: "📍 Малая Морская ул., 24 (в здании отеля «Англетер»)",
+                img: "https://s0.rbk.ru/v6_top_pics/media/img/3/09/347603602372093.jpeg",
+                shortDesc: "Изысканный эстетичный кинотеатр-бар с атмосферой старого Парижа и столиками вместо обычных кресел.",
+                fullDesc: "Cinéma Michèle — это премиальный кинематографический салон и бар в здании гостиницы «Англетер» у Исаакиевского собора. Вместо привычных рядов здесь размещены роскошные бордовые бархатные кресла и диваны с индивидуальными столиками и камерными абажурами[cite: 2]. Гостям подают напитки, закуски и аперитивы прямо во время сеансов. В репертуаре — фестивальное кино, авторские ленты, классика кинематографа и специальные показы с интро-лекциями кинокритиков[cite: 2]."
+            },
+            {
+                tag: "Культурный центр",
+                title: "Бертгольд Центр",
+                address: "📍 Гражданская ул., 13-15",
+                img: "https://static.tildacdn.com/tild3437-6534-4136-b432-313130313937/112.jpg",
+                shortDesc: "Креативное пространство на бывшей словолитне с неоновой подсветкой и смотровой площадкой.",
+                fullDesc: "Бертгольд Центр — популярный креативный кластер в историческом дворе[cite: 8, 9], объединивший локальные бренды одежды, крафтовые кофейни, галереи и фотостудии. Пространство славится своими вечерними огнями[cite: 8], атмосферой свободы и открытой смотровой площадкой на крыше."
+            },
+            {
+                tag: "Кафе",
+                title: "Chez Jules",
+                address: "📍 Гангутская ул., 16",
+                img: "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0f/da/7b/f0/cafe-jules.jpg?w=400&h=400&s=1",
+                shortDesc: "Уютное французское бистро с хрустящими круассанами и атмосферой Парижа.",
+                fullDesc: "Кафе Chez Jules на Гангутской улице переносит гостей в парижское бистро. Французская музыка, свежая выпечка, ароматный кофе и тихая улица рядом с Соляным переулком делают его идеальным местом для неспешного завтрака."
+            },
+            {
+                tag: "Городской парк",
+                title: "Таврический сад",
+                address: "📍 Санкт-Петербург, Кирочная / Потемкинская ул.",
+                img: "https://cdn-processed.tmatic.travel/d9c6cff1-78a2-4989-819b-61521ea50cf1.jpg?1791121908990",
+                shortDesc: "Живописный исторический сад с прудами, оранжереей и красивыми мостиками.",
+                fullDesc: "Таврический сад — памятник садово-паркового искусства XVIII века[cite: 10, 11]. Сюда приходят отдыхать на газонах, гулять вдоль романтических прудов с изящными мостиками[cite: 10, 11] или посещать знаменитую Таврическую оранжерею с экзотическими растениями."
+            },
+            {
+                tag: "Художественная галерея",
+                title: "Мансарда художников",
+                address: "📍 Кожевенная линия, 30 (Культурный квартал Брусницын)",
+                img: "https://idemvmuzei.ru//storage/museum/9e/b3/41/b5/94/9a/50/7b/Mark_Olich_142.jpg",
+                shortDesc: "Народная арт-галерея и багетная мастерская с атмосферным интерьером, картинами, бюстами и рамами.",
+                fullDesc: "«Мансарда художников» — известная свободная народная галерея и салон живописи[cite: 3]. Пространство наполнено настоящим духом петербургской богемы: стеллажи с книгами, сотни картин современных художников, скульптурные бюсты, рамы и багеты[cite: 3]. Любую понравившуюся картину здесь можно подробно рассмотреть, примерить к интерьеру или приобрести."
+            },
+            {
+                tag: "Кафе",
+                title: "Десятка",
+                address: "📍 Пионерская ул., 3/15Б",
+                img: "https://avatars.mds.yandex.net/get-altay/15282671/2a000001963a3b47618f6a5399af505b91f0/L_height",
+                shortDesc: "Атмосферное локальное кафе Петроградской стороны с отличным спешелти кофе.",
+                fullDesc: "Кафе «Десятка» славится среди местных жителей Петроградки душевным сервисом, проработанным меню завтраков, крафтовой выпечкой и отличным кофе свежей обжарки."
+            },
+            {
+                tag: "Дом культуры",
+                title: "Особняк Серебрякова",
+                address: "📍 наб. Кутузова, 22",
+                img: "https://7d9e88a8-f178-4098-bea5-48d960920605.selcdn.net/1d3d71b1-e8f3-4ac0-aeb1-c333ce10299b/",
+                shortDesc: "Роскошный исторический особняк XIX века с потрясающими концертами при свечах в зеркальных залах.",
+                fullDesc: "Особняк Серебрякова на набережной Кутузова сохранил пышные интерьеры эклектики, лепнину и зеркала[cite: 4, 5]. Сегодня здесь проходят завораживающие камерные концерты классической и неоклассической музыки при свечах, создающие невероятную мистическую и романтическую атмосферу[cite: 4, 5]."
+            },
+            {
+                tag: "Музей",
+                title: "Музей «Эрарта»",
+                address: "📍 29-я линия В.О., 2",
+                img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRy5ourH0lPRFmSgWcq8mYIw5jtyB8tZhJS3H5mXn-37wqfbWVz8NXUwog&s=10",
+                shortDesc: "Крупнейший частный музей современного искусства в России с авангардными выставками и инсталляциями.",
+                fullDesc: "Музей Эрарта предлагает несколько этажей современного искусства[cite: 7]: постоянная коллекция живописи, уникальные скульптуры[cite: 7], тотальные инсталляции (U-Space), а также регулярные временные выставки фотографии и дизайна со всего мира."
+            },
+            {
+                tag: "Пространство",
+                title: "Анненкирхе (Церковь Св. Анны)",
+                address: "📍 Кирочная ул., 8В",
+                img: "https://travel.by/wp-content/uploads/2024/02/annenkirhe-erarta-cover-1536x1024.webp",
+                shortDesc: "Действующая лютеранская церковь с обгоревшими стенами, арт-объектами и масштабными выставками.",
+                fullDesc: "Анненкирхе — уникальное общественное и религиозное пространство[cite: 6]. Пережив пожар в 2002 году, здание сохранили в эстетике обгоревших стен, дополнив смелыми световыми инсталляциями и парящими арт-объектами (например, инсталляцией планеты Земля под сводами)[cite: 6]. Здесь проводятся выставки, концерты и ярмарки."
+            }
+        ];
+
+        const grid = document.getElementById('locationsGrid');
+
+        locations.forEach((loc, index) => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.onclick = () => openModal(index);
+
+            card.innerHTML = `
+                <img src="${loc.img}" alt="${loc.title}" class="card-img" loading="lazy">
+                <div class="card-content">
+                    <span class="card-tag">${loc.tag}</span>
+                    <h3>${loc.title}</h3>
+                    <div class="address">${loc.address}</div>
+                    <p class="short-desc">${loc.shortDesc}</p>
+                    <div class="card-footer-btn">Подробнее &rarr;</div>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+
+        function openModal(index) {
+            const loc = locations[index];
+            document.getElementById('modalImg').src = loc.img;
+            document.getElementById('modalTag').innerText = loc.tag;
+            document.getElementById('modalTitle').innerText = loc.title;
+            document.getElementById('modalAddress').innerText = loc.address;
+            document.getElementById('modalDesc').innerText = loc.fullDesc;
+            
+            const linkContainer = document.getElementById('modalLinkContainer');
+            if (loc.link) {
+                linkContainer.innerHTML = `<a href="${loc.link}" target="_blank" style="color: var(--accent-color); text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 0.4rem;">🔗 ${loc.linkText || 'Ссылка'} &rarr;</a>`;
+            } else {
+                linkContainer.innerHTML = '';
+            }
+
+            document.getElementById('modalBackdrop').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            document.getElementById('modalBackdrop').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        document.getElementById('modalBackdrop').addEventListener('click', (e) => {
+            if (e.target.id === 'modalBackdrop') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
